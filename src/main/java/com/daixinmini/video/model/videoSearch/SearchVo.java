@@ -1,5 +1,7 @@
 package com.daixinmini.video.model.videoSearch;
 
+import java.util.List;
+
 /**
  * <p>Project: video </p>
  * <p>Description: </p>
@@ -11,6 +13,15 @@ public class SearchVo {
     private String name;
     private String url;
     private String type;
+    private List<MovieVo> movieVoList;
+
+    public List<MovieVo> getMovieVoList() {
+        return movieVoList;
+    }
+
+    public void setMovieVoList(List<MovieVo> movieVoList) {
+        this.movieVoList = movieVoList;
+    }
 
     public String getType() {
         return type;

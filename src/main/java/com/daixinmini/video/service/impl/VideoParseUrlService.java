@@ -1,12 +1,12 @@
 package com.daixinmini.video.service.impl;
 
-import com.daixinmini.video.consts.BaseConst;
-import com.daixinmini.video.model.videoParse.VideoParseUrlVo;
-import com.daixinmini.video.service.IVideoParseUrlService;
-import com.daixinmini.video.util.CrawlerHttpUtil;
-import com.daixinmini.video.util.DateUtil;
-import com.daixinmini.video.util.JsonUtil;
-import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -14,12 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.daixinmini.video.consts.BaseConst;
+import com.daixinmini.video.model.videoParse.VideoParseUrlVo;
+import com.daixinmini.video.service.IVideoParseUrlService;
+import com.daixinmini.video.util.CrawlerHttpUtil;
+import com.daixinmini.video.util.DateUtil;
+import com.daixinmini.video.util.JsonUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * <p>Project: video </p>
@@ -49,15 +50,18 @@ public class VideoParseUrlService implements IVideoParseUrlService {
         try {
             JsonNode jsonNode = JsonUtil.asJson(videoJson);
             List<JsonNode> list = JsonUtil.asArray(jsonNode.get("list"));
+            int count = list.size();
             for (JsonNode node : list) {
                 VideoParseUrlVo vo = new VideoParseUrlVo();
                 String name = JsonUtil.getNodeAsString(node, "name");
-                String url = JsonUtil.getNodeAsString(node, "url");
+                String url = JsonUtil.getNodeAsString(node, "url").replaceAll("\"", "");
                 if (StringUtils.isEmpty(url)) {
                     continue;
                 }
                 vo.setName(name);
                 vo.setUrl(url);
+                vo.setId(count);
+                count--;
                 voList.add(vo);
             }
             Collections.reverse(voList);

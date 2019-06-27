@@ -7,9 +7,18 @@ package com.daixinmini.video.model.videoParse;
  * <p>All Rights Reserved.</p>
  * @author <a href="mailto:380025303@qq.com">Dai Xin</a>
  */
-public class VideoParseUrlVo {
+public class VideoParseUrlVo implements Comparable<VideoParseUrlVo> {
+    private Integer id;
     private String name;
     private String url;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -25,5 +34,10 @@ public class VideoParseUrlVo {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    @Override
+    public int compareTo(VideoParseUrlVo o) {
+        return o.getId() - this.id;
     }
 }

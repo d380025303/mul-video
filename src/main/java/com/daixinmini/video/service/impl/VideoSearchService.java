@@ -118,11 +118,66 @@ public class VideoSearchService implements IVideoSearchService {
         }
         String a = URLEncoder.encode(content, "UTF-8");
         String format = MessageFormat.format(BaseConst.IQIYI_SEARCH_URL, a);
-
         String sendGet = CrawlerHttpUtil.sendGet(format);
 
-        List<SearchVo> searchVos = parseIqiyiSearchResult(sendGet);
+        // 开始解析
+        org.jsoup.nodes.Document document = Jsoup.parse(sendGet);
+        org.jsoup.nodes.Element modResultUl = document.getElementsByClass("mod_result_list").get(0);
+        Elements resultList = modResultUl.getElementsByTag("li");
 
+        List<SearchVo> searchVos = new ArrayList<>();
+        for (org.jsoup.nodes.Element element : resultList) {
+            SearchVo searchVo = new SearchVo();
+            // 名称
+            String tvName = element.attr("data-widget-searchlist-tvname");
+            if (BasicUtil.isEmpty(tvName)) {
+                continue;
+            }
+            searchVo.setType("iqiqyi");
+            searchVo.setName(tvName);
+            // url
+            Elements figures = element.getElementsByClass("figure");
+            if (figures != null && figures.size() > 0) {
+                String url = figures.get(0).attr("href");
+                searchVo.setUrl(url);
+            }
+
+            Elements allMovieDivs = element.getElementsByAttributeValue("data-tvlist-elem", "alllist");
+            if (allMovieDivs != null && allMovieDivs.size() > 0) {
+                org.jsoup.nodes.Element allMovieDiv = allMovieDivs.get(0);
+                Elements movieUls = allMovieDiv.getElementsByAttributeValue("data-tvlist-elem", "list");
+                if (movieUls == null || movieUls.size() == 0) {
+                    movieUls = allMovieDiv.getElementsByAttributeValue("data-tvlist-elem", "defaultlist");
+                }
+                if (movieUls == null || movieUls.size() == 0) {
+                    movieUls = allMovieDiv.getElementsByAttributeValue("data-documelist-elem", "defaultlist");
+                }
+                if (movieUls == null || movieUls.size() == 0) {
+                    movieUls = allMovieDiv.getElementsByAttributeValue("data-documelist-elem", "defaultlist");
+                }
+                if (movieUls == null || movieUls.size() == 0) {
+                    movieUls = allMovieDiv.getElementsByAttributeValue("data-searchpingback-elem", "link");
+                }
+                if (movieUls == null || movieUls.size() == 0) {
+                    continue;
+                }
+                org.jsoup.nodes.Element movieUl = movieUls.get(0);
+
+                Elements movieAs = movieUl.getElementsByTag("a");
+
+                List<MovieVo> movieVos = new ArrayList<>();
+                for (org.jsoup.nodes.Element movieA : movieAs) {
+                    String movieUrl = movieA.attr("href");
+                    String movieNum = BasicUtil.string(movieA.attr("title"), "1");
+                    MovieVo vo = new MovieVo();
+                    vo.setNum(movieNum);
+                    vo.setUrl(movieUrl);
+                    movieVos.add(vo);
+                }
+                searchVo.setMovieVoList(movieVos);
+            }
+            searchVos.add(searchVo);
+        }
         VideoSearchRespVo respVo = new VideoSearchRespVo();
         respVo.setSearchVoList(searchVos);
         return respVo;
@@ -212,10 +267,8 @@ public class VideoSearchService implements IVideoSearchService {
             html = html.substring(1, html.length() - 1);
             html = html//
                     .replaceAll("\\\\n\\\\t\\\\t", " ")//
-                    .replaceAll("\\\\n\\\\t", " ")
-                    .replaceAll("\\\\n", "")//
-                    .replaceAll("\\\\t", "")
-                    .replaceAll("\\\\", "");
+                    .replaceAll("\\\\n\\\\t", " ").replaceAll("\\\\n", "")//
+                    .replaceAll("\\\\t", "").replaceAll("\\\\", "");
             if (BasicUtil.isEmpty(html)) {
                 break;
             }
@@ -235,7 +288,7 @@ public class VideoSearchService implements IVideoSearchService {
                 org.jsoup.nodes.Element num = snNum.get(0);
 
                 String name = num.text();
-                if (isPreview){
+                if (isPreview) {
                     name = "预" + num.text();
                 }
 
@@ -249,8 +302,6 @@ public class VideoSearchService implements IVideoSearchService {
                 list.add(vo);
             }
         }
-
-
 
         return list;
     }
