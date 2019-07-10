@@ -78,8 +78,11 @@ public class VideoParseUrlService implements IVideoParseUrlService {
         try {
             File file = BasicUtil.getParseUrlFile();
             ObjectMapper mapper = JsonUtil.buildObjectMapper();
-            List<VideoParseUrlVo> oldList = mapper.readValue(file, new TypeReference<List<VideoParseUrlVo>>() {
-            });
+            List<VideoParseUrlVo> oldList = null;
+            if (file.exists()) {
+                oldList = mapper.readValue(file, new TypeReference<List<VideoParseUrlVo>>() {
+                });
+            }
             if (oldList == null || oldList.size() == 0) {
                 loadVideoParse();
                 file = BasicUtil.getParseUrlFile();
