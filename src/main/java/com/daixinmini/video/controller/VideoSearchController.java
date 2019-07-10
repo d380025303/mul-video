@@ -1,22 +1,21 @@
 package com.daixinmini.video.controller;
 
-import com.daixinmini.video.model.videoParse.VideoParseUrlVo;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.daixinmini.video.model.videoSearch.MovieVo;
 import com.daixinmini.video.model.videoSearch.SearchVo;
 import com.daixinmini.video.model.videoSearch.VideoSearchReqVo;
 import com.daixinmini.video.model.videoSearch.VideoSearchRespVo;
 import com.daixinmini.video.service.IVideoParseUrlService;
 import com.daixinmini.video.service.IVideoSearchService;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
 
-import java.util.List;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * <p>Project: video </p>
@@ -37,13 +36,13 @@ public class VideoSearchController {
     @PostMapping("/searchList")
     @ApiOperation("搜索视频")
     public VideoSearchRespVo searchList(@RequestBody VideoSearchReqVo videoSearchReqVo) throws Exception {
-        if ("qq".equals(videoSearchReqVo.getType())){
+        if ("qq".equals(videoSearchReqVo.getType())) {
             VideoSearchRespVo respVo = videoSearchService.search4Qq(videoSearchReqVo.getContent());
             return respVo;
-        } else if ("iqiyi".equals(videoSearchReqVo.getType())){
+        } else if ("iqiyi".equals(videoSearchReqVo.getType())) {
             VideoSearchRespVo respVo = videoSearchService.search4Iqiyi(videoSearchReqVo.getContent());
             return respVo;
-        } else if ("youku".equals(videoSearchReqVo.getType())){
+        } else if ("youku".equals(videoSearchReqVo.getType())) {
             VideoSearchRespVo respVo = videoSearchService.search4Youku(videoSearchReqVo.getContent());
             return respVo;
         }
@@ -53,9 +52,9 @@ public class VideoSearchController {
     @PostMapping("/movieList")
     @ApiOperation("搜索剧集")
     public List<MovieVo> searchList(@RequestBody SearchVo searchVo) throws Exception {
-        if ("qq".equals(searchVo.getType())){
+        if ("qq".equals(searchVo.getType())) {
             return videoSearchService.movie4Qq(searchVo.getUrl());
-        } else if ("youku".equals(searchVo.getType())){
+        } else if ("youku".equals(searchVo.getType())) {
             return videoSearchService.movie4Youku(searchVo.getUrl());
         }
         return null;

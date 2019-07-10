@@ -274,32 +274,45 @@ public class VideoSearchService implements IVideoSearchService {
             }
             org.jsoup.nodes.Document mainHtmlD = Jsoup.parse(html);
             Elements elementsByAttributes = mainHtmlD.getElementsByClass("item-num");
-            for (org.jsoup.nodes.Element element1 : elementsByAttributes) {
-                Elements elementsByTag = element1.getElementsByTag("a");
-                org.jsoup.nodes.Element elementA = elementsByTag.get(0);
-
-                // 是否是预告
-                boolean isPreview = false;
-                Elements elementsByClass = elementA.getElementsByClass("label-preview");
-                if (elementsByClass.size() > 0) {
-                    isPreview = true;
+            if (elementsByAttributes.size() == 0) {
+                Elements a = mainHtmlD.getElementsByClass("item");
+                if (a.size() > 0) {
+                    org.jsoup.nodes.Element element = a.get(0);
+                    String movieUrl = element.attr("item-id");
+                    String title = element.attr("title");
+                    MovieVo vo = new MovieVo();
+                    vo.setNum(title);
+                    vo.setUrl("https://v.youku.com/v_show/" + movieUrl + ".html");
+                    list.add(vo);
                 }
-                Elements snNum = elementA.getElementsByClass("sn_num");
-                org.jsoup.nodes.Element num = snNum.get(0);
+            } else {
+                for (org.jsoup.nodes.Element element1 : elementsByAttributes) {
+                    Elements elementsByTag = element1.getElementsByTag("a");
+                    org.jsoup.nodes.Element elementA = elementsByTag.get(0);
 
-                String name = num.text();
-                if (isPreview) {
-                    name = "预" + num.text();
-                }
+                    // 是否是预告
+                    boolean isPreview = false;
+                    Elements elementsByClass = elementA.getElementsByClass("label-preview");
+                    if (elementsByClass.size() > 0) {
+                        isPreview = true;
+                    }
+                    Elements snNum = elementA.getElementsByClass("sn_num");
+                    org.jsoup.nodes.Element num = snNum.get(0);
 
-                String movieUrl = elementA.attr("href");
-                if (!movieUrl.startsWith("http")) {
-                    movieUrl = "https:" + movieUrl;
+                    String name = num.text();
+                    if (isPreview) {
+                        name = "预" + num.text();
+                    }
+
+                    String movieUrl = elementA.attr("href");
+                    if (!movieUrl.startsWith("http")) {
+                        movieUrl = "https:" + movieUrl;
+                    }
+                    MovieVo vo = new MovieVo();
+                    vo.setNum(name);
+                    vo.setUrl(movieUrl);
+                    list.add(vo);
                 }
-                MovieVo vo = new MovieVo();
-                vo.setNum(name);
-                vo.setUrl(movieUrl);
-                list.add(vo);
             }
         }
 
