@@ -1,10 +1,13 @@
 package com.daixinmini.video.util;
 
+import com.daixinmini.video.consts.BaseConst;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -306,5 +309,49 @@ public class BasicUtil {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * @Title isJarEvn
+     * @Description 是否是jar环境
+     * @return
+     */
+    private static Boolean isJarEvn() {
+        URL url = BasicUtil.class.getResource("");
+        String protocol = url.getProtocol();
+        if ("jar".equals(protocol)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @Title getClassPath
+     * @Description 获取classPath绝对路径
+     * @return
+     */
+    private static String getClassPath() {
+        URL url = BasicUtil.class.getResource("/");
+        return url.getPath();
+    }
+
+    private static String mkdirs() {
+        String path = null;
+        if (!isJarEvn()) {
+            path = getClassPath() + "base/";
+        }else {
+            path = "base/";
+        }
+        File dirFile = new File(path);
+        if (!dirFile.exists()) {
+            dirFile.mkdirs();
+        }
+        return path;
+    }
+
+    public static File getParseUrlFile() {
+        String path = mkdirs();
+        String filePath = path + BaseConst.PARSE_URL;
+        return new File(filePath);
     }
 }

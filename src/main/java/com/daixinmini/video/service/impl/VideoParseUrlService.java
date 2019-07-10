@@ -5,8 +5,14 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import com.daixinmini.video.util.BasicUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -35,9 +41,74 @@ public class VideoParseUrlService implements IVideoParseUrlService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public List<VideoParseUrlVo> handleVideoParseUrl() {
-        String videoJson = getVideoJson();
-        return parseJson(videoJson);
+    public void loadVideoParse() {
+        try {
+            String videoJson = CrawlerHttpUtil.sendGet(BaseConst.VIDEO_PARSE_URL);
+            List<VideoParseUrlVo> parseUrlVoList = parseJson(videoJson);
+
+            File file = BasicUtil.getParseUrlFile();
+
+            ObjectMapper mapper = JsonUtil.buildObjectMapper();
+            List<VideoParseUrlVo> oldList = null;
+            if (file.exists()) {
+                oldList = mapper.readValue(file, new TypeReference<List<VideoParseUrlVo>>() {
+                });
+            }
+            if (oldList == null) {
+                mapper.writeValue(file, parseUrlVoList);
+            } else if (oldList.size() != parseUrlVoList.size()) {
+                Map<String, VideoParseUrlVo> oldMap = new HashMap<>();
+                for (VideoParseUrlVo vo : oldList) {
+                    oldMap.put(vo.getUrl(), vo);
+                }
+                for (VideoParseUrlVo vo : parseUrlVoList) {
+                    if (!oldMap.containsKey(vo.getUrl())) {
+                        oldList.add(vo);
+                    }
+                }
+                mapper.writeValue(file, parseUrlVoList);
+            }
+        } catch (IOException e) {
+            logger.error("获取视频解析url失败 ---- e: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<VideoParseUrlVo> getVideoParse() {
+        try {
+            File file = BasicUtil.getParseUrlFile();
+            ObjectMapper mapper = JsonUtil.buildObjectMapper();
+            List<VideoParseUrlVo> oldList = mapper.readValue(file, new TypeReference<List<VideoParseUrlVo>>() {
+            });
+            if (oldList == null || oldList.size() == 0) {
+                loadVideoParse();
+                file = BasicUtil.getParseUrlFile();
+                oldList = mapper.readValue(file, new TypeReference<List<VideoParseUrlVo>>() {
+                });
+            }
+            for (int i = 0; i < oldList.size(); i++) {
+                oldList.get(i).setSeqNo(i + 1);
+            }
+            return oldList;
+        } catch (IOException e) {
+            logger.error("读取视频解析url失败 ---- e: " + e.getMessage(), e);
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public void addHotNum(VideoParseUrlVo vo) throws IOException {
+        File file = BasicUtil.getParseUrlFile();
+        ObjectMapper mapper = JsonUtil.buildObjectMapper();
+        List<VideoParseUrlVo> oldList = mapper.readValue(file, new TypeReference<List<VideoParseUrlVo>>() {
+            });
+        String url = vo.getUrl();
+        for (VideoParseUrlVo videoParseUrlVo : oldList) {
+            if (videoParseUrlVo.getUrl().compareTo(url) == 0) {
+                videoParseUrlVo.setHotNum(videoParseUrlVo.getHotNum() + 1);
+            }
+        }
+        mapper.writeValue(file, oldList);
     }
 
     /**
@@ -50,18 +121,16 @@ public class VideoParseUrlService implements IVideoParseUrlService {
         try {
             JsonNode jsonNode = JsonUtil.asJson(videoJson);
             List<JsonNode> list = JsonUtil.asArray(jsonNode.get("list"));
-            int count = list.size();
             for (JsonNode node : list) {
                 VideoParseUrlVo vo = new VideoParseUrlVo();
-                String name = JsonUtil.getNodeAsString(node, "name");
+                String name = JsonUtil.getNodeAsString(node, "name").replaceAll("\"", "");
                 String url = JsonUtil.getNodeAsString(node, "url").replaceAll("\"", "");
                 if (StringUtils.isEmpty(url)) {
                     continue;
                 }
                 vo.setName(name);
                 vo.setUrl(url);
-                vo.setId(count);
-                count--;
+                vo.setHotNum(0);
                 voList.add(vo);
             }
             Collections.reverse(voList);
@@ -71,41 +140,4 @@ public class VideoParseUrlService implements IVideoParseUrlService {
         return voList;
     }
 
-    /**
-     * 获取json获取视频解析url列表
-     * @return
-     */
-    private String getVideoJson() {
-        String json = getVideoJsonFromDesk();
-        if (Strings.isNotEmpty(json)) {
-            return json;
-        }
-        try {
-            String sendGet = CrawlerHttpUtil.sendGet(BaseConst.VIDEO_PARSE_URL);
-            File file = getFile();
-            FileUtils.writeStringToFile(file, sendGet, "UTF-8", false);
-            return sendGet;
-        } catch (IOException e) {
-            logger.error("获取视频解析url失败 ---- e: " + e.getMessage(), e);
-        }
-        return null;
-    }
-
-    private File getFile() {
-        Timestamp now = DateUtil.now();
-        return new File("VideoParseUrl" + DateUtil.yyyyMMdd(now));
-    }
-
-    private String getVideoJsonFromDesk() {
-        String s = null;
-        try {
-            File file = getFile();
-            if (file.exists()) {
-                s = FileUtils.readFileToString(file, "UTF-8");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return s;
-    }
 }

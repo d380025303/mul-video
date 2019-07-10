@@ -2,6 +2,7 @@ package com.daixinmini.video.service;
 
 import com.daixinmini.video.model.videoParse.VideoParseUrlVo;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -14,7 +15,18 @@ import java.util.List;
 public interface IVideoParseUrlService {
 
     /**
-     * 解析视频解析url
+     * 加载视频解析文件
      */
-    List<VideoParseUrlVo> handleVideoParseUrl();
+    void loadVideoParse();
+
+    /**
+     * 加载视频解析文件
+     */
+    List<VideoParseUrlVo> getVideoParse();
+
+    /**
+     * 增加热度
+     * @param vo
+     */
+    void addHotNum(VideoParseUrlVo vo) throws IOException;
 }

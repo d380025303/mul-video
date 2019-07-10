@@ -8,6 +8,7 @@ package com.daixinmini.video.consts;
  * @author <a href="mailto:380025303@qq.com">Dai Xin</a>
  */
 public interface BaseConst {
+    String PARSE_URL = "videoParseUrl.xml";
     String VIDEO_PARSE_URL = "https://iodefog.github.io/text/mviplistmm.json";
     String QQ_SEARCH_URL = "https://s.video.qq.com/smartbox?plat=2&ver=0&num=10&otype=xml&query={0}";
     String IQIYI_SEARCH_URL = "https://so.iqiyi.com/so/q_{0}";

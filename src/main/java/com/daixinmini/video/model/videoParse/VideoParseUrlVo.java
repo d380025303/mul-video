@@ -8,16 +8,25 @@ package com.daixinmini.video.model.videoParse;
  * @author <a href="mailto:380025303@qq.com">Dai Xin</a>
  */
 public class VideoParseUrlVo implements Comparable<VideoParseUrlVo> {
-    private Integer id;
+    private Integer hotNum;
     private String name;
     private String url;
+    private Integer seqNo;
 
-    public Integer getId() {
-        return id;
+    public Integer getSeqNo() {
+        return seqNo;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setSeqNo(Integer seqNo) {
+        this.seqNo = seqNo;
+    }
+
+    public Integer getHotNum() {
+        return hotNum;
+    }
+
+    public void setHotNum(Integer hotNum) {
+        this.hotNum = hotNum;
     }
 
     public String getName() {
@@ -38,6 +47,10 @@ public class VideoParseUrlVo implements Comparable<VideoParseUrlVo> {
 
     @Override
     public int compareTo(VideoParseUrlVo o) {
-        return o.getId() - this.id;
+        int result = o.getHotNum() - this.hotNum;
+        if (result == 0) {
+           return o.getUrl().compareTo(this.getUrl());
+        }
+        return result;
     }
 }
