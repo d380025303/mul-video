@@ -338,9 +338,9 @@ public class BasicUtil {
     private static String mkdirs() {
         String path = null;
         if (!isJarEvn()) {
-            path = getClassPath() + "base/";
+            path = getClassPath() + "data/";
         }else {
-            path = "base/";
+            path = "data/";
         }
         File dirFile = new File(path);
         if (!dirFile.exists()) {
