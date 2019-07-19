@@ -349,6 +349,10 @@ public class BasicUtil {
         return path;
     }
 
+    public static File getFolderListen() {
+        return new File(mkdirs());
+    }
+
     public static File getParseUrlFile() {
         String path = mkdirs();
         String filePath = path + BaseConst.PARSE_URL;
